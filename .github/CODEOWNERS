@@ -1,0 +1,34 @@
+*                                               @project-leads @security-team
+
+# Backend services require backend team and security review
+src/backend/**                                  @backend-team @security-team
+
+# Frontend code requires frontend team and accessibility review
+src/web/**                                      @frontend-team @accessibility-team
+
+# Security services require both security and compliance review
+src/backend/src/services/security/**            @security-team @compliance-team
+
+# AI/ML services require ML expertise and security review
+src/backend/src/services/ai/**                  @ai-team @security-team
+
+# Infrastructure changes require DevOps and security review
+infrastructure/**                               @devops-team @security-team
+
+# CI/CD workflows require DevOps and security review
+.github/workflows/**                            @devops-team @security-team
+
+# Database migrations require DB expertise and security review
+src/backend/src/database/migrations/**          @database-team @security-team
+
+# Test suites require QA and security validation
+src/*/tests/**                                  @qa-team @security-team
+
+# Documentation requires technical writing and compliance review
+*.md                                           @docs-team @compliance-team
+
+# Payment services require backend, security, and compliance review
+src/backend/src/services/payment/**             @backend-team @security-team @compliance-team
+
+# Authentication services require security, backend, and compliance review
+src/backend/src/services/auth/**                @security-team @backend-team @compliance-team
