@@ -1,0 +1,140 @@
+global:
+  # Global timeout for resolving alerts
+  resolve_timeout: 5m
+  
+  # SMTP configuration for email notifications
+  smtp_smarthost: ${SMTP_HOST}:${SMTP_PORT}
+  smtp_from: alerts@precheck.me
+  smtp_auth_username: ${SMTP_USERNAME}
+  smtp_auth_password: ${SMTP_PASSWORD}
+  
+  # Integration endpoints
+  slack_api_url: ${SLACK_WEBHOOK_URL}
+  pagerduty_url: ${PAGERDUTY_API_URL}
+  victorops_api_url: ${VICTOROPS_API_URL}
+  
+  # TLS configuration for secure communications
+  http_config:
+    tls_config:
+      cert_file: /etc/alertmanager/certs/cert.pem
+      key_file: /etc/alertmanager/certs/key.pem
+      ca_file: /etc/alertmanager/certs/ca.pem
+
+# Alert template configurations
+templates:
+  - templates/alert.tmpl
+  - templates/email.tmpl
+  - templates/slack.tmpl
+  - templates/pagerduty.tmpl
+
+# Main routing tree configuration
+route:
+  # Group alerts by these labels
+  group_by: ['alertname', 'cluster', 'service', 'region', 'environment']
+  
+  # Default timing configurations
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  
+  # Default receiver if no routes match
+  receiver: default
+  
+  # Specific routing configurations
+  routes:
+    # Critical production alerts to PagerDuty
+    - match:
+        severity: critical
+        environment: production
+      receiver: pagerduty-prod
+      group_wait: 0s
+      repeat_interval: 30m
+      continue: true
+
+    # Critical staging alerts to Slack
+    - match:
+        severity: critical
+        environment: staging
+      receiver: slack-staging
+      group_wait: 1m
+      repeat_interval: 1h
+
+    # Backend service alerts in production
+    - match_re:
+        service: api|worker|database
+        environment: production
+      receiver: team-backend-prod
+      group_wait: 30s
+      group_interval: 2m
+
+    # Security-related alerts in production
+    - match:
+        type: security
+        environment: production
+      receiver: security-team
+      group_wait: 0s
+      repeat_interval: 15m
+
+# Alert inhibition rules
+inhibit_rules:
+  # Suppress warning alerts if there is a critical alert for the same service
+  - source_match:
+      severity: critical
+    target_match:
+      severity: warning
+    equal: ['alertname', 'cluster', 'service', 'region']
+
+  # Suppress resource alerts if instance is down
+  - source_match:
+      alertname: InstanceDown
+    target_match_re:
+      alertname: .*HighCPU.*|.*HighMemory.*
+    equal: ['instance', 'cluster', 'region']
+
+# Notification receivers configuration
+receivers:
+  # Default receiver - email only
+  - name: default
+    email_configs:
+      - to: alerts@precheck.me
+        send_resolved: true
+        html: '{{ template "email.html" . }}'
+
+  # Production critical alerts - PagerDuty
+  - name: pagerduty-prod
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SERVICE_KEY_PROD}
+        send_resolved: true
+        description: '{{ template "pagerduty.description" . }}'
+        client: Precheck.me Alertmanager
+        client_url: https://alerts.precheck.me
+        severity: '{{ .CommonLabels.severity }}'
+
+  # Backend team alerts - Slack and email
+  - name: team-backend-prod
+    slack_configs:
+      - channel: '#backend-alerts-prod'
+        send_resolved: true
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+        actions:
+          - type: button
+            text: View Dashboard
+            url: '{{ .CommonAnnotations.dashboard_url }}'
+    email_configs:
+      - to: backend-team@precheck.me
+        send_resolved: true
+        html: '{{ template "email.html" . }}'
+
+  # Security team alerts - VictorOps and email
+  - name: security-team
+    victorops_configs:
+      - api_key: ${VICTOROPS_API_KEY}
+        routing_key: security
+        message_type: CRITICAL
+        entity_display_name: '{{ .GroupLabels.alertname }}'
+        state_message: '{{ template "victorops.message" . }}'
+    email_configs:
+      - to: security@precheck.me
+        send_resolved: true
+        html: '{{ template "email.html" . }}'
