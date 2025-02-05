@@ -1,0 +1,95 @@
+node_modules
+dist
+.next
+build
+out
+
+# Development and environment files
+.env*
+.env.*.local
+.env.development
+.env.test
+.env.production
+
+# Version control
+.git
+.gitignore
+.gitattributes
+.github
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Test files and coverage reports
+__tests__
+*.test.*
+*.spec.*
+coverage
+.nyc_output
+
+# Cache and temporary files
+.cache
+tmp
+.turbo
+.npm
+.pnpm-store
+
+# Security and credentials
+*.key
+*.pem
+secrets/
+credentials/
+.ssh/
+
+# Documentation and non-essential files
+*.md
+*.txt
+LICENSE
+CHANGELOG
+docs/
+
+# Debug and log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log
+
+# Project specific build artifacts
+.next/
+.vercel/
+storybook-static/
+public/workbox-*.js
+public/sw.js
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Configuration files not needed in production
+.prettierrc
+.eslintrc
+.babelrc
+jest.config.*
+tsconfig.*
+
+# Monitoring and analytics
+.lighthouse/
+.scannerwork/
+reports/
+
+# Development tools
+*.local
+.husky/
+.commitlintrc
+.lintstagedrc
+
+# Backup files
+*.bak
+*.backup
+*~
