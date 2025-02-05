@@ -1,0 +1,100 @@
+# Prometheus Configuration v2.45.0
+# Core monitoring configuration for Precheck.me platform
+
+global:
+  # Global scrape and evaluation intervals
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  
+  # External labels for identifying metrics source
+  external_labels:
+    environment: ${ENVIRONMENT}
+    region: ${REGION}
+    cluster: ${CLUSTER_NAME}
+
+# Rule files containing recording and alerting rules
+rule_files:
+  - rules/system_rules.yml
+  - rules/application_rules.yml
+  - rules/business_rules.yml
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 5s
+      api_version: v2
+
+# Scrape configurations for service discovery and metrics collection
+scrape_configs:
+  # Kubernetes pods auto-discovery
+  - job_name: kubernetes-pods
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - precheck-prod
+            - precheck-staging
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod
+    metric_relabel_configs:
+      - source_labels: [__name__]
+        action: drop
+        regex: container_(network_tcp_usage_total|tasks_state|cpu_load_average_10s)
+
+  # API Server metrics collection
+  - job_name: api-server
+    static_configs:
+      - targets:
+          - backend:3000
+        labels:
+          service: api
+          component: backend
+    metrics_path: /metrics
+    scrape_interval: 10s
+    scheme: https
+    tls_config:
+      cert_file: /etc/prometheus/certs/client.crt
+      key_file: /etc/prometheus/certs/client.key
+      ca_file: /etc/prometheus/certs/ca.crt
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: ${REMOTE_WRITE_URL}
+    remote_timeout: 30s
+    queue_config:
+      capacity: 10000
+      max_samples_per_send: 1000
+      batch_send_deadline: 5s
+      min_shards: 10
+      max_shards: 30
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: temp.*
+        action: drop
+
+# Local storage configuration
+storage:
+  tsdb:
+    path: /prometheus
+    retention_time: 15d
+    min_block_duration: 2h
+    max_block_duration: 24h
+    no_lockfile: false
+    allow_overlapping_blocks: false
+    wal_compression: true
