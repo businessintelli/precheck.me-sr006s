@@ -36,7 +36,7 @@ jobs:
           version: ${{ env.PNPM_VERSION }}
 
       - name: Cache dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.pnpm-store
           key: pnpm-${{ hashFiles('src/backend/pnpm-lock.yaml') }}
