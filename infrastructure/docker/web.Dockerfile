@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 # ===== Builder Stage =====
-FROM node:20-alpine AS builder
+FROM node:23-alpine AS builder
 
 # Set build environment variables
 ENV NODE_ENV=production \
@@ -36,7 +36,7 @@ RUN pnpm build \
     && pnpm prune --prod
 
 # ===== Runner Stage =====
-FROM node:20-alpine AS runner
+FROM node:23-alpine AS runner
 
 # Set runtime environment variables
 ENV NODE_ENV=production \
