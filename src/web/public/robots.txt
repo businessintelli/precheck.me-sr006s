@@ -1,0 +1,56 @@
+# Encoding: UTF-8
+# Last Updated: 2024
+
+# Global Rules
+User-agent: *
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+Allow: /about
+Allow: /contact
+Allow: /pricing
+Allow: /terms
+Allow: /privacy
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /auth/reset-password
+Disallow: /auth/verify
+Disallow: /admin/
+Disallow: /checks/
+Disallow: /documents/
+Disallow: /interviews/
+Disallow: /*.json$
+Disallow: /*.js$
+Disallow: /*.map$
+Disallow: /*.ts$
+Disallow: /*.tsx$
+Disallow: /node_modules/
+Disallow: /.next/
+Disallow: /dist/
+Crawl-delay: 10
+
+# Block AI/ML Crawlers
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+# Google-specific Rules
+User-agent: Googlebot
+Allow: /
+Allow: /auth/login
+Allow: /auth/register
+Allow: /about
+Allow: /contact
+Allow: /pricing
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /admin/
+Disallow: /*.json$
+Disallow: /*.js$
+Crawl-delay: 5
+
+# Sitemaps
+Sitemap: https://precheck.me/sitemap.xml
+Sitemap: https://precheck.me/sitemap-blog.xml
