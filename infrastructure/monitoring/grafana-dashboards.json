@@ -1,0 +1,241 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "name": "Deployments",
+        "datasource": "prometheus",
+        "expr": "changes(kube_deployment_status_replicas_updated[1m]) > 0",
+        "tagKeys": ["namespace", "deployment"],
+        "titleFormat": "Deployment Update"
+      },
+      {
+        "name": "Alerts",
+        "datasource": "alertmanager",
+        "expr": "ALERTS",
+        "tagKeys": ["alertname", "severity"],
+        "titleFormat": "Alert Fired"
+      }
+    ]
+  },
+  "dashboards": [
+    {
+      "title": "System Overview",
+      "uid": "system-overview",
+      "panels": [
+        {
+          "title": "CPU Usage by Container",
+          "type": "graph",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(rate(container_cpu_usage_seconds_total{container!=\"\"}[5m])) by (pod, container)",
+              "legendFormat": "{{pod}}/{{container}}"
+            }
+          ],
+          "yaxes": [
+            { "format": "percentunit", "label": "CPU Usage" },
+            { "show": false }
+          ],
+          "tooltip": { "shared": true, "sort": 2 }
+        },
+        {
+          "title": "Memory Usage by Container",
+          "type": "graph",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(container_memory_usage_bytes{container!=\"\"}) by (pod, container)",
+              "legendFormat": "{{pod}}/{{container}}"
+            }
+          ],
+          "yaxes": [
+            { "format": "bytes", "label": "Memory Usage" },
+            { "show": false }
+          ]
+        },
+        {
+          "title": "Resource Quotas",
+          "type": "gauge",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(kube_resourcequota_used) / sum(kube_resourcequota_hard) * 100",
+              "legendFormat": "{{resource}}"
+            }
+          ],
+          "options": {
+            "thresholds": [
+              { "color": "green", "value": null },
+              { "color": "yellow", "value": 70 },
+              { "color": "red", "value": 85 }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "API Performance",
+      "uid": "api-performance",
+      "panels": [
+        {
+          "title": "Request Rate by Route",
+          "type": "graph",
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total[5m])) by (route, method)",
+              "legendFormat": "{{method}} {{route}}"
+            }
+          ],
+          "yaxes": [
+            { "format": "reqps", "label": "Requests/sec" },
+            { "show": false }
+          ]
+        },
+        {
+          "title": "Response Time Distribution",
+          "type": "heatmap",
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "rate(http_request_duration_seconds_bucket[5m])",
+              "format": "heatmap"
+            }
+          ],
+          "yaxis": {
+            "format": "s",
+            "logBase": 1
+          }
+        },
+        {
+          "title": "Error Rate",
+          "type": "graph",
+          "gridPos": { "h": 8, "w": 24, "x": 0, "y": 8 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total{status=~\"5..|4..\"}[5m])) by (status)",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "alert": {
+            "name": "High Error Rate",
+            "conditions": [
+              {
+                "evaluator": { "params": [5], "type": "gt" },
+                "operator": { "type": "and" },
+                "query": { "params": ["A", "5m", "now"] }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "title": "Background Jobs",
+      "uid": "background-jobs",
+      "panels": [
+        {
+          "title": "Queue Length by Type",
+          "type": "stat",
+          "gridPos": { "h": 8, "w": 8, "x": 0, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(background_jobs_queued) by (type)",
+              "legendFormat": "{{type}}"
+            }
+          ],
+          "options": {
+            "colorMode": "value",
+            "graphMode": "area",
+            "justifyMode": "auto"
+          }
+        },
+        {
+          "title": "Processing Rate",
+          "type": "graph",
+          "gridPos": { "h": 8, "w": 8, "x": 8, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "rate(background_jobs_completed_total[5m])",
+              "legendFormat": "{{type}}"
+            }
+          ],
+          "yaxes": [
+            { "format": "ops", "label": "Jobs/sec" },
+            { "show": false }
+          ]
+        },
+        {
+          "title": "Job Status Distribution",
+          "type": "pie",
+          "gridPos": { "h": 8, "w": 8, "x": 16, "y": 0 },
+          "datasource": "prometheus",
+          "targets": [
+            {
+              "expr": "sum(background_jobs_status) by (status)",
+              "legendFormat": "{{status}}"
+            }
+          ],
+          "options": {
+            "legend": { "show": true },
+            "pieType": "donut"
+          }
+        }
+      ]
+    }
+  ],
+  "datasources": [
+    {
+      "name": "prometheus",
+      "type": "prometheus",
+      "url": "http://prometheus:9090",
+      "access": "proxy",
+      "isDefault": true,
+      "jsonData": {
+        "timeInterval": "30s",
+        "queryTimeout": "60s",
+        "httpMethod": "POST"
+      },
+      "secureJsonData": {
+        "httpHeaderValue1": "${PROMETHEUS_API_KEY}"
+      }
+    },
+    {
+      "name": "loki",
+      "type": "loki",
+      "url": "http://loki:3100",
+      "access": "proxy",
+      "jsonData": {
+        "maxLines": 1000,
+        "timeout": 30
+      }
+    },
+    {
+      "name": "alertmanager",
+      "type": "alertmanager",
+      "url": "http://alertmanager:9093",
+      "access": "proxy",
+      "jsonData": {
+        "implementation": "prometheus"
+      }
+    }
+  ],
+  "preferences": {
+    "theme": "dark",
+    "homeDashboardUID": "system-overview",
+    "timezone": "browser"
+  },
+  "version": 1,
+  "refresh": "1m",
+  "schemaVersion": 36,
+  "editable": true,
+  "graphTooltip": 1
+}
