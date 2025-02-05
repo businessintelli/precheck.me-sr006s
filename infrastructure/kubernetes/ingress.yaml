@@ -1,0 +1,90 @@
+# Kubernetes Ingress configuration for Precheck.me
+# Version: v1
+# Dependencies:
+# - kubernetes v1.25+
+# - cert-manager v1.12+
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: precheck-ingress
+  namespace: precheck-me
+  annotations:
+    # Ingress controller configuration
+    kubernetes.io/ingress.class: "nginx"
+    
+    # SSL/TLS configuration with cert-manager
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Performance optimizations
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    
+    # Security headers configuration
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      more_set_headers "X-Frame-Options: DENY";
+      more_set_headers "X-Content-Type-Options: nosniff";
+      more_set_headers "X-XSS-Protection: 1; mode=block";
+      more_set_headers "Strict-Transport-Security: max-age=31536000; includeSubDomains";
+      more_set_headers "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline';";
+      more_set_headers "Referrer-Policy: strict-origin-when-cross-origin";
+    
+    # CORS configuration
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://precheck.me,https://api.precheck.me"
+    
+    # Rate limiting
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    
+    # Logging and debugging
+    nginx.ingress.kubernetes.io/enable-rewrite-log: "true"
+    
+    # Compression configuration
+    nginx.ingress.kubernetes.io/server-snippet: |
+      gzip on;
+      gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    
+    # URL rewriting configuration
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: "/$2"
+
+spec:
+  # TLS configuration
+  tls:
+    - hosts:
+        - precheck.me
+        - api.precheck.me
+      secretName: precheck-tls
+  
+  # Routing rules
+  rules:
+    # Frontend application routing
+    - host: precheck.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: web-frontend-service
+                port:
+                  number: 80
+    
+    # Backend API routing
+    - host: api.precheck.me
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: backend
+                port:
+                  number: 80
