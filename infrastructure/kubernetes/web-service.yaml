@@ -1,0 +1,50 @@
+# Kubernetes Service configuration for the Next.js web frontend application
+# Version: v1.25+
+# Purpose: Expose and load balance web frontend pods internally within the cluster
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: web-frontend-service
+  namespace: precheck-me
+  labels:
+    app: web-frontend
+    environment: production
+    component: frontend
+    managed-by: kubernetes
+    part-of: precheck-me
+  annotations:
+    # Prometheus monitoring configuration
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+    prometheus.io/path: "/metrics"
+    
+    # Topology and load balancing settings
+    service.kubernetes.io/topology-aware-hints: "auto"
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+
+spec:
+  # Internal cluster IP service type for security
+  type: ClusterIP
+  
+  # Port configuration
+  ports:
+    - port: 80              # Service port
+      targetPort: 3000      # Container port
+      protocol: TCP
+      name: http
+      appProtocol: http     # Application protocol hint
+  
+  # Pod selector matching deployment labels
+  selector:
+    app: web-frontend
+  
+  # Session handling and traffic policy
+  sessionAffinity: None
+  publishNotReadyAddresses: false
+  internalTrafficPolicy: Cluster
+  
+  # IP family configuration for dual-stack support
+  ipFamilyPolicy: PreferDualStack
