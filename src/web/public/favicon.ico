@@ -1,0 +1,26 @@
+[Binary content of a 32x32 ICO file with the following specifications:
+
+File Format: ICO (Windows Icon)
+Color Depth: 32-bit (True Color with Alpha)
+Dimensions: Contains both 16x16 and 32x32 versions
+Material Design 3.0 Principles:
+- Clear silhouette with consistent stroke weight
+- Optical adjustments for small sizes
+- Brand color usage with proper contrast
+- Anti-aliasing enabled for smooth edges
+
+Optimization:
+- File size optimized for web delivery
+- Alpha channel transparency
+- High-DPI display support
+- RGB color space with 32-bit depth
+
+The icon represents a stylized "P" for Precheck.me using Material Design 3.0 guidelines, with:
+- Primary brand color as fill
+- Proper padding for legibility
+- Clear edges at both 16x16 and 32x32 sizes
+- Minimum 4.5:1 contrast ratio
+- Smooth anti-aliasing
+- Pixel-perfect alignment
+
+Note: This is a binary file, actual content would be the compiled ICO format data]
