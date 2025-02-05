@@ -1,0 +1,203 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base Layer - Core styles and resets */
+@layer base {
+  :root {
+    /* Material Design 3.0 color system variables */
+    --background: theme('colors.neutral.50');
+    --foreground: theme('colors.neutral.950');
+    --primary: theme('colors.primary.600');
+    --primary-foreground: theme('colors.primary.50');
+    --secondary: theme('colors.secondary.600');
+    --secondary-foreground: theme('colors.secondary.50');
+    --accent: theme('colors.accent.600');
+    --accent-foreground: theme('colors.accent.50');
+    --muted: theme('colors.neutral.100');
+    --muted-foreground: theme('colors.neutral.500');
+    --border: theme('colors.neutral.200');
+    --input: theme('colors.neutral.200');
+    --success: theme('colors.semantic.success');
+    --error: theme('colors.semantic.error');
+    --warning: theme('colors.semantic.warning');
+    --info: theme('colors.semantic.info');
+
+    /* Material Design elevation system */
+    --elevation-1: theme('shadows.elevation.1');
+    --elevation-2: theme('shadows.elevation.2');
+    --elevation-3: theme('shadows.elevation.3');
+    --elevation-4: theme('shadows.elevation.4');
+    --elevation-5: theme('shadows.elevation.5');
+
+    /* Animation tokens */
+    --animation-instant: theme('animations.duration.instant');
+    --animation-fast: theme('animations.duration.fast');
+    --animation-normal: theme('animations.duration.normal');
+    --animation-slow: theme('animations.duration.slow');
+    --animation-very-slow: theme('animations.duration.verySlow');
+  }
+
+  [data-theme='dark'] {
+    --background: theme('colors.neutral.950');
+    --foreground: theme('colors.neutral.50');
+    --primary: theme('colors.primary.400');
+    --primary-foreground: theme('colors.primary.950');
+    --secondary: theme('colors.secondary.400');
+    --secondary-foreground: theme('colors.secondary.950');
+    --accent: theme('colors.accent.400');
+    --accent-foreground: theme('colors.accent.950');
+    --muted: theme('colors.neutral.800');
+    --muted-foreground: theme('colors.neutral.400');
+    --border: theme('colors.neutral.800');
+    --input: theme('colors.neutral.800');
+  }
+
+  /* High contrast theme for accessibility */
+  [data-theme='high-contrast'] {
+    --contrast-multiplier: 1.5;
+    --foreground: black;
+    --background: white;
+    --border: black;
+    --primary: theme('colors.primary.900');
+    --secondary: theme('colors.secondary.900');
+    --accent: theme('colors.accent.900');
+  }
+
+  /* Base HTML elements */
+  html {
+    font-family: theme('typography.fontFamily.sans');
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+
+  /* Focus styles for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Components Layer - Enhanced shadcn/ui components */
+@layer components {
+  /* Button variants */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-all;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary/90;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary/90;
+  }
+
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent/90;
+  }
+
+  /* Card component with elevation */
+  .card {
+    @apply rounded-lg border border-border bg-background p-6;
+    @apply transition-shadow duration-normal;
+    box-shadow: var(--elevation-1);
+  }
+
+  .card:hover {
+    box-shadow: var(--elevation-2);
+  }
+
+  /* Form elements with enhanced accessibility */
+  .form-input {
+    @apply rounded-md border border-input bg-background px-3 py-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Dialog/Modal with elevation */
+  .dialog {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    @apply bg-background/80 backdrop-blur-sm;
+  }
+
+  .dialog-content {
+    @apply w-full max-w-md rounded-lg bg-background p-6;
+    box-shadow: var(--elevation-3);
+  }
+}
+
+/* Utilities Layer - Custom utilities and responsive helpers */
+@layer utilities {
+  /* Responsive visibility utilities */
+  .hidden-mobile {
+    @apply hidden sm:block;
+  }
+
+  .hidden-desktop {
+    @apply block sm:hidden;
+  }
+
+  /* Elevation utilities */
+  .elevation-1 {
+    box-shadow: var(--elevation-1);
+  }
+
+  .elevation-2 {
+    box-shadow: var(--elevation-2);
+  }
+
+  .elevation-3 {
+    box-shadow: var(--elevation-3);
+  }
+
+  /* Animation utilities */
+  .animate-instant {
+    transition-duration: var(--animation-instant);
+  }
+
+  .animate-fast {
+    transition-duration: var(--animation-fast);
+  }
+
+  .animate-normal {
+    transition-duration: var(--animation-normal);
+  }
+
+  /* Grid system utilities */
+  .grid-auto-fit {
+    @apply grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4;
+  }
+
+  .grid-auto-fill {
+    @apply grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4;
+  }
+
+  /* RTL support utilities */
+  .rtl {
+    direction: rtl;
+  }
+
+  [dir='rtl'] .flip-x {
+    transform: scaleX(-1);
+  }
+}
