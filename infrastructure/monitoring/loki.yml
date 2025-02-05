@@ -1,0 +1,162 @@
+# Loki Configuration v2.9.0
+# Production configuration for Precheck.me platform monitoring
+
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+  grpc_server_max_recv_msg_size: 67108864  # 64MB
+
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: "2023-01-01"
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h  # 7 days
+  ingestion_rate_mb: 10
+  ingestion_burst_size_mb: 20
+  max_global_streams_per_user: 5000
+  max_query_length: 1h
+  max_query_parallelism: 32
+  max_entries_limit_per_query: 5000
+  max_cache_freshness_per_query: 10m
+
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 15d  # 15 days retention
+  poll_interval: 12h
+
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /loki/rules
+  rule_path: /loki/rules
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+  enable_alertmanager_v2: true
+  evaluation_interval: 1m
+
+analytics:
+  reporting_enabled: false
+
+query_scheduler:
+  max_outstanding_requests_per_tenant: 100
+  queue_length_cap: 50
+
+# Log processing and alerting rules
+ruler_config:
+  rules:
+    - groups:
+        - name: error_detection
+          rules:
+            - alert: HighErrorRate
+              expr: |
+                sum(rate({app="backend"} |= "error" [5m])) > 10
+              for: 5m
+              labels:
+                severity: critical
+              annotations:
+                summary: High error rate in logs
+                description: Application is logging errors at a high rate
+
+        - name: security
+          rules:
+            - alert: AuthenticationFailures
+              expr: |
+                sum(rate({app="backend"} |= "authentication failed" [5m])) > 5
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Multiple authentication failures
+                description: High rate of authentication failures detected
+
+        - name: performance
+          rules:
+            - alert: SlowResponseTime
+              expr: |
+                sum(rate({app="backend"} |= "response_time_ms" | json | response_time_ms > 1000 [5m])) > 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: Slow response times detected
+                description: Multiple requests taking longer than 1 second to process
+
+        - name: infrastructure
+          rules:
+            - alert: HighResourceUsage
+              expr: |
+                sum(rate({app="backend"} |= "resource_usage" | json | cpu_usage > 80 [5m])) > 0
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: High resource usage detected
+                description: System resources are being heavily utilized
+
+# Stream selectors for different components
+stream_selectors:
+  - labels:
+      app: backend
+      environment: production
+  - labels:
+      app: frontend
+      environment: production
+  - labels:
+      app: worker
+      environment: production
+
+# Ingestion configuration
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 1h
+  chunk_target_size: 1048576
+  max_chunk_age: 2h
+  chunk_retain_period: 30s
+  max_transfer_retries: 0
+
+# Storage configuration for chunks
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/cache
+    cache_ttl: 24h
+    shared_store: filesystem
+
+# Compactor configuration
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+  compaction_interval: 10m
