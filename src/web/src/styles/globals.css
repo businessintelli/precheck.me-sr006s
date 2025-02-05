@@ -1,0 +1,208 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Inter font with variable weights */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Root variables for theme configuration */
+:root {
+  /* Font configuration */
+  --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Color system */
+  --primary: theme('colors.primary.600');
+  --primary-foreground: theme('colors.primary.50');
+  --secondary: theme('colors.secondary.600');
+  --secondary-foreground: theme('colors.secondary.50');
+  --accent: theme('colors.accent.600');
+  --accent-foreground: theme('colors.accent.50');
+  --background: theme('colors.neutral.50');
+  --foreground: theme('colors.neutral.950');
+  --muted: theme('colors.neutral.100');
+  --muted-foreground: theme('colors.neutral.500');
+  --border: theme('colors.neutral.200');
+  --ring: theme('colors.primary.200');
+
+  /* Semantic colors */
+  --success: theme('colors.semantic.success');
+  --error: theme('colors.semantic.error');
+  --warning: theme('colors.semantic.warning');
+  --info: theme('colors.semantic.info');
+
+  /* Elevation system */
+  --elevation-1: theme('shadows.elevation.1');
+  --elevation-2: theme('shadows.elevation.2');
+  --elevation-3: theme('shadows.elevation.3');
+  --elevation-4: theme('shadows.elevation.4');
+  --elevation-5: theme('shadows.elevation.5');
+
+  /* Animation tokens */
+  --motion-instant: theme('animations.duration.instant');
+  --motion-fast: theme('animations.duration.fast');
+  --motion-normal: theme('animations.duration.normal');
+  --motion-slow: theme('animations.duration.slow');
+  --motion-very-slow: theme('animations.duration.verySlow');
+
+  /* Layout constants */
+  --header-height: 4rem;
+  --sidebar-width: 16rem;
+  --radius: 0.5rem;
+}
+
+/* Dark mode theme variables */
+[data-theme='dark'] {
+  --background: theme('colors.neutral.950');
+  --foreground: theme('colors.neutral.50');
+  --muted: theme('colors.neutral.800');
+  --muted-foreground: theme('colors.neutral.400');
+  --border: theme('colors.neutral.800');
+  --ring: theme('colors.primary.800');
+}
+
+/* High contrast theme variables */
+[data-theme='high-contrast'] {
+  --contrast-multiplier: 1.5;
+  --foreground: black;
+  --background: white;
+  --border: black;
+  --primary: theme('colors.primary.900');
+  --secondary: theme('colors.secondary.900');
+  --accent: theme('colors.accent.900');
+}
+
+/* Base styles */
+@layer base {
+  html {
+    font-family: var(--font-inter);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    min-height: 100vh;
+    line-height: 1.5;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+
+  /* Enhanced focus styles for accessibility */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius);
+  }
+
+  /* Smooth scrolling with reduced motion preference */
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* Reduced motion styles */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Utility classes */
+@layer utilities {
+  /* Hide scrollbar while maintaining functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Enhanced focus ring */
+  .focus-ring {
+    @apply outline-none ring-2 ring-offset-2 ring-primary transition-shadow duration-200;
+  }
+
+  /* Motion-safe animations */
+  .motion-safe {
+    @media (prefers-reduced-motion: no-preference) {
+      @apply transition-all duration-200 ease-in-out;
+    }
+  }
+
+  /* High contrast mode enhancements */
+  @media (prefers-contrast: high) {
+    .high-contrast {
+      border: 2px solid currentColor;
+    }
+  }
+
+  /* Responsive visibility helpers */
+  .hidden-mobile {
+    @apply hidden sm:block;
+  }
+
+  .hidden-desktop {
+    @apply block sm:hidden;
+  }
+
+  /* Grid system utilities */
+  .grid-auto-fit {
+    @apply grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-4;
+  }
+
+  /* RTL support */
+  .rtl {
+    direction: rtl;
+  }
+
+  [dir='rtl'] .flip-x {
+    transform: scaleX(-1);
+  }
+}
+
+/* Component styles */
+@layer components {
+  /* Button base styles */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2;
+    @apply disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  /* Card styles with elevation */
+  .card {
+    @apply rounded-lg border border-border bg-background p-6;
+    @apply transition-shadow duration-normal;
+    box-shadow: var(--elevation-1);
+  }
+
+  .card:hover {
+    box-shadow: var(--elevation-2);
+  }
+
+  /* Form elements with enhanced accessibility */
+  .form-input {
+    @apply rounded-md border border-input bg-background px-3 py-2;
+    @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* Dialog/Modal with elevation */
+  .dialog {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+    @apply bg-background/80 backdrop-blur-sm;
+  }
+
+  .dialog-content {
+    @apply w-full max-w-md rounded-lg bg-background p-6;
+    box-shadow: var(--elevation-3);
+  }
+}
