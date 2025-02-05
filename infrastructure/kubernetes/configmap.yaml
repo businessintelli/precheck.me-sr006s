@@ -1,0 +1,111 @@
+# Kubernetes ConfigMap for Precheck.me Application
+# Version: v1
+# Kubernetes Version: v1.25+
+# Purpose: Stores non-sensitive configuration for application services
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: precheck-config
+  namespace: precheck
+  labels:
+    app: precheck
+    environment: production
+    region: us-east-1
+  annotations:
+    description: "Production configuration for Precheck.me application services"
+    lastUpdated: "2024-02-07"
+data:
+  # Application Core Settings
+  NODE_ENV: "production"
+  API_VERSION: "v1"
+  API_PORT: "3000"
+  API_BASE_URL: "/api/v1"
+  CORS_ORIGINS: "https://precheck.me,https://app.precheck.me"
+
+  # Database Configuration
+  DB_HOST: "postgres-primary.precheck.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "precheck"
+  DB_USER: "precheck_app"
+  DB_POOL_MIN: "5"
+  DB_POOL_MAX: "20"
+  DB_IDLE_TIMEOUT: "10000"
+  DB_CONNECTION_TIMEOUT: "5000"
+
+  # Redis Cache Configuration
+  REDIS_HOST: "redis-master.precheck.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_MAX_CONNECTIONS: "50"
+
+  # Storage Configuration
+  STORAGE_BUCKET: "precheck-documents-${REGION}"
+  STORAGE_REGION: "${REGION}"
+
+  # AI Service Configuration
+  AI_SERVICE_URL: "http://ai-service.precheck.svc.cluster.local:8000"
+  AI_SERVICE_TIMEOUT: "30000"
+
+  # Logging and Metrics
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  METRICS_ENABLED: "true"
+  METRICS_PORT: "9090"
+
+  # Security and Rate Limiting
+  RATE_LIMIT_WINDOW: "3600"
+  RATE_LIMIT_MAX: "1000"
+
+  # Worker Configuration
+  WORKER_CONCURRENCY: "5"
+  WORKER_QUEUE_SIZE: "100"
+
+  # Feature Flags
+  FEATURE_FLAGS: |
+    {
+      "documentAI": true,
+      "interviewAnalysis": true,
+      "multiRegion": true
+    }
+
+  # Regional Service Discovery
+  SERVICE_ENDPOINTS: |
+    {
+      "us-east-1": {
+        "primary": true,
+        "services": {
+          "api": "api.us-east-1.precheck.internal",
+          "worker": "worker.us-east-1.precheck.internal",
+          "ai": "ai.us-east-1.precheck.internal"
+        }
+      },
+      "us-west-2": {
+        "primary": false,
+        "services": {
+          "api": "api.us-west-2.precheck.internal",
+          "worker": "worker.us-west-2.precheck.internal",
+          "ai": "ai.us-west-2.precheck.internal"
+        }
+      }
+    }
+
+  # Performance Tuning
+  PERFORMANCE_CONFIG: |
+    {
+      "maxConcurrentRequests": 1000,
+      "requestTimeout": 30000,
+      "connectionPoolSize": 100,
+      "keepAliveTimeout": 5000,
+      "compressionEnabled": true
+    }
+
+  # Health Check Configuration
+  HEALTH_CHECK_CONFIG: |
+    {
+      "enabled": true,
+      "interval": 30,
+      "timeout": 5,
+      "healthyThreshold": 2,
+      "unhealthyThreshold": 3,
+      "path": "/health"
+    }
